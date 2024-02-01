@@ -1,0 +1,22 @@
+{% load index %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+{% for field in field_names %}
+    {% with field_type=types|index:forloop.counter0 attr=user|getattribute:field %}
+        {% if field_type == 'ImageField' %}
+            {{ field }} : <p><img src={{ attr|getattribute:'url' }}></p>
+        {% elif field_type == 'FileField' %}
+            {{ field }} : <p><a href={{ attr|getattribute:'url' }}>{{ attr }}</a></p>
+        {% else %}
+            <p>{{ field }} : {{ attr }} : {{ types | index:forloop.counter0 }}</p>
+        {% endif %}
+    {% endwith %}
+{% endfor %}
+
+</body>
+</html>

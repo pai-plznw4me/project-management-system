@@ -1,0 +1,15 @@
+{% load index %}
+{% load static %}
+{% block contents %}
+    {% for field in field_names %}
+        {% with field_type=types|index:forloop.counter0 attr=object|getattribute:field %}
+            {% if field_type == 'ImageField' %}
+                {{ field }} : <p><img src={{ attr|getattribute:'url' }}></p>
+            {% elif field_type == 'FileField' %}
+                {{ field }} : <p><a href={{ attr|getattribute:'url' }}>{{ attr }}</a></p>
+            {% else %}
+                <p>{{ field }} : {{ attr }}</p>
+            {% endif %}
+        {% endwith %}
+    {% endfor %}
+{% endblock %}
