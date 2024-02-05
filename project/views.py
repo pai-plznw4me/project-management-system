@@ -1,11 +1,14 @@
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 
+from approval.forms import ApprovalCreateForm
+from approval.models import Approval
 from file.forms import FileCreateForm
 from project.forms import ProjectCreateForm, ProjectUpdateForm, ProjectFileCreateForm, ProjectFileUpdateForm, \
     ProjectDetailForm, ProjectFileDetailForm
 from helper import detail_html, standard_create, standard_update, standard_detail, standard_index, card_row, h_tag, \
-    get_base_url, standard_delete, generate_crud_table, generate_crud_filetable, crud_formtable, gantt_crud_formtable
+    get_base_url, standard_delete, generate_crud_table, generate_crud_filetable, crud_formtable, gantt_crud_formtable, \
+    approval_crud_formtable
 from project.models import Project, ProjectFile
 
 
@@ -125,16 +128,15 @@ def detail(request, id):
         detail_content = kwargs['detail_content']
         added_contents = kwargs['added_contents']  # added_contents is list, list is mutable!
 
-        # CRUD 테이블을 생성헙니다.
-        projectfiles = ProjectFile.objects.filter(project=inst)
-        crud_projectfile_table = crud_formtable(base_url, projectfiles, ProjectFileCreateForm, 'project/projectfile')
-
-        # 프로젝트 상세 설명 및 제목 추가
+        # 프로젝트 상세 설명
         project_title = h_tag(2, '프로젝트 상세')  # h2 tag 제목
         added_contents[0] = project_title + card_row((detail_content, 12))  # added_contents 내 첫번째 요소 : detail_content
 
-        # 프로젝트 산출물 상세 설명 및 제목 추가
-        projectfile_title = h_tag(2, '프로젝트 산출물 상세')  # h2 tag 제목
+        # 프로젝트 산출물
+        # CRUD 테이블을 생성헙니다.
+        projectfiles = ProjectFile.objects.filter(project=inst)
+        crud_projectfile_table = crud_formtable(base_url, projectfiles, ProjectFileCreateForm, 'project/projectfile')
+        projectfile_title = h_tag(2, '프로젝트 산출물 관리')  # h2 tag 제목
         added_contents.append(projectfile_title + card_row((crud_projectfile_table, 12)))
 
         # WBS 산출물
@@ -144,13 +146,14 @@ def detail(request, id):
         added_contents.append(projectfile_title + card_row((crud_wbs_table, 12)))
 
         # 구매 관리 산출물
-        projectfile_title = h_tag(2, '구매관리')  # h2 tag 제목
-        added_contents.append(projectfile_title + card_row((crud_projectfile_table, 12)))
+        approvals = Approval.objects.filter(project=inst)
+        approval_title = h_tag(2, '구매 관리')  # h2 tag 제목
+        approval_crud_table = approval_crud_formtable(base_url, approvals, ApprovalCreateForm, 'approval')
+        added_contents.append(approval_title + card_row((approval_crud_table, 12)))
 
         # 계약 관리 산출물
-        projectfile_title = h_tag(2, '계약관리')  # h2 tag 제목
+        projectfile_title = h_tag(2, '계약 관리')  # h2 tag 제목
         added_contents.append(projectfile_title + card_row((crud_projectfile_table, 12)))
-
 
         # 계약 관리 산출물
         projectfile_title = h_tag(2, '계약관리')  # h2 tag 제목

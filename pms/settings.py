@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'doctris_base',
     'project',
     'twproject',  # <-- 추가된 코드
+    'approval',  # <-- 추가된 코드
 ]
 
 MIDDLEWARE = [

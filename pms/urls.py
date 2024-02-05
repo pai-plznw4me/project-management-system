@@ -27,6 +27,7 @@ urlpatterns = [
     path('doctris_base/', include('doctris_base.urls'), name='doctris_base'),
     path('project/', include('project.urls'), name='project'),
     path('twproject/', include('twproject.urls'), name='twproject'),
+    path('approval/', include('approval.urls'), name='approval'),
 
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # <-- 추가된 코드
