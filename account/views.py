@@ -10,7 +10,7 @@ from account.models import CustomUser
 def index(request):
     HttpResponse('Hello')
 
-
+@csrf_exempt
 def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST, request.FILES)  # <-- FILES 와 같이 입력이 되어야 한다.
@@ -61,3 +61,20 @@ def profile(request):
     return render(request, template_name='account/profile.html', context=context)
 
 
+
+
+@csrf_exempt
+def createsuperuser(request):
+    CustomUser.objects.create_superuser(username='admin',
+                                        email='admin@admin.com',
+                                        password='q1w2e3r4Q!W@E#R$',
+                                        first_name='admin',
+                                        last_name='admin',
+                                        phone_number='01062766596',
+                                        career=2,
+                                        rank='manager',
+                                        date_company_joined='2022-02-02',
+                                        id_number='admin',
+                                        department='관리부',
+                                        region='서울').save()
+    return HttpResponse('Create Superuser : admin ')
