@@ -1,14 +1,25 @@
+<!--
+File: detail.html
+Author: 김성중
+Version: 1.1
+Date: 2024-02-05
+
+Description: 파이 표준 Detail html page
+helper.standard_detail 함수와 연계되어 사용
+-->
+
+
 {% load index %}
 {% load static %}
 {% block contents %}
-    {% for field in field_names %}
-        {% with field_type=types|index:forloop.counter0 attr=object|getattribute:field %}
+    {% for field in fields %}
+        {% with field_type=types|index:forloop.counter0 attr=object|getattribute:field field_name=field_names|index:forloop.counter0 %}
             {% if field_type == 'ImageField' %}
-                {{ field }} : <p><img src={{ attr|getattribute:'url' }}></p>
+                {{ field_name }} : <p><img src={{ attr|getattribute:'url' }}></p>
             {% elif field_type == 'FileField' %}
-                {{ field }} : <p><a href={{ attr|getattribute:'url' }}>{{ attr }}</a></p>
+                {{ field_name }} : <p><a href={{ attr|getattribute:'url' }}>{{ attr }}</a></p>
             {% else %}
-                <p>{{ field }} : {{ attr }}</p>
+                <p>{{ field_name }} : {{ attr }}</p>
             {% endif %}
         {% endwith %}
     {% endfor %}

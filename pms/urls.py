@@ -25,6 +25,9 @@ urlpatterns = [
     path('account/', include('django.contrib.auth.urls')),  # <-- 추가된 코드
     path('file/', include('file.urls'), name='file'),  # <-- 추가된 코드
     path('doctris_base/', include('doctris_base.urls'), name='doctris_base'),
+    path('project/', include('project.urls'), name='project'),
+    path('twproject/', include('twproject.urls'), name='twproject'),
+
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  # <-- 추가된 코드
 

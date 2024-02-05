@@ -1,3 +1,13 @@
+"""
+File: helper.py
+Author: 김성중
+Version: 1.2
+Date: 2024-02-04
+
+Description: 모든 앱에 공통적으로 사용되는 유틸 또는 헬퍼 func 들을 정의해 놓음.
+
+"""
+
 import os
 from urllib.parse import urlparse
 import pandas as pd
@@ -43,7 +53,7 @@ def generate_url(base_url, url_path):
     return os.path.join(base_url, url_path)
 
 
-def append_onclick_button(btn_name, base_url, df, url_path):
+def append_onclick_button(btn_name, df, url):
     """
     DataFrame에 <button> 태그와 onclick 속성이 추가된 열을 추가하는 함수입니다.
 
@@ -53,7 +63,6 @@ def append_onclick_button(btn_name, base_url, df, url_path):
     :param url_path: 버튼이 클릭되었을 때 이동할 URL 경로
     :return: 없음
     """
-    url = generate_url(base_url, os.path.join(url_path, btn_name))
     # dataframe update column 에 button tag 삽입, project/delete/{id} 를 삽입
     df[btn_name] = df.id.map(
         lambda x: '<button onclick="location.href=\'{}/{}\'">{}</button>'.format(url, x, btn_name))
@@ -145,13 +154,13 @@ def generate_crud_table(base_url, objects, field_names, url_path, **kwargs):
         object_df = pd.DataFrame.from_records(objects.values())
 
         # detail button (read)
-        append_onclick_button('detail', base_url, object_df, url_path)
+        append_onclick_button('detail', object_df, os.path.join( base_url, url_path, 'detail'))
 
         # generate update urls, (update)
-        append_onclick_button('update', base_url, object_df, url_path)
+        append_onclick_button('update', object_df, os.path.join( base_url, url_path, 'update'))
 
         # delete button (delete)
-        append_onclick_button('delete', base_url, object_df, url_path)
+        append_onclick_button('delete', object_df, os.path.join( base_url, url_path, 'delete'))
 
 
     else:  # 테이블이 하나도 존재하지 않으면 아래 코드 수행
@@ -197,13 +206,14 @@ def generate_crud_filetable(base_url, objects, field_names, url_path, **kwargs):
         object_df.loc[:, target_colname] = url_tags
 
         # detail button (read)
-        append_onclick_button('detail', base_url, object_df, url_path)
+        append_onclick_button('detail', object_df, os.path.join( base_url, url_path, 'detail'))
 
         # generate update urls, (update)
-        append_onclick_button('update', base_url, object_df, url_path)
+        append_onclick_button('update', object_df, os.path.join( base_url, url_path, 'update'))
 
         # delete button (delete)
-        append_onclick_button('delete', base_url, object_df, url_path)
+        append_onclick_button('delete', object_df, os.path.join( base_url, url_path, 'delete'))
+
 
 
     else:  # 테이블이 하나도 존재하지 않으면 아래 코드 수행
@@ -218,36 +228,6 @@ def generate_crud_filetable(base_url, objects, field_names, url_path, **kwargs):
     button_tag = create_button(url, 'create')
     crud_table = button_tag + table_html
     return crud_table
-
-
-def get_all_fieldnames_fieldtype(model, with_foreignkey=True, remove=None):
-    """
-    주어진 Django 모델의 모든 필드 이름을 반환합니다.
-    foreinkey 반환시 django 에서 참조하는 명은 '{model}_id' 입니다.
-    반환시에는 _id 을 제거하고 {model} 명만 반환합니다.
-
-    Parameters:
-    - model (django.db.models.Model): 필드 이름을 가져올 Django 모델 인스턴스
-    - with_foreignkey (bool) : foreinkey 포함 여부
-    - remove (List): column 에서 빼버릴것들
-
-    Returns:
-    - List[str]: 모델의 모든 필드 이름을 담은 문자열 리스트
-    """
-
-    fields = model._meta.fields
-    if with_foreignkey:
-        names = [field.attname for field in fields]
-    # foreign key column 을 제외하고 제공합니다.
-    else:
-        names = [field.attname for field in fields if not isinstance(field, models.ForeignKey)]
-    if remove:
-        # fields 내 요소(element) 중 remove 에 포함되어 있는 요소를 제거합니다.
-        names_fields = list(filter(lambda x: x[0] not in remove, zip(names, fields)))
-        names, fields = zip(*names_fields)
-
-    types = get_field_types(model, names)
-    return list(names), list(types), list(fields)
 
 
 def apply_widget_by_field(model, field_names, **kwargs):
@@ -272,7 +252,7 @@ def apply_widget_by_field(model, field_names, **kwargs):
     - dict: 각 필드에 적용된 위젯을 담은 딕셔너리
     """
 
-    widget_fields = field_names.copy()
+    widget_fields = field_names
     widgets = {}
 
     for field in widget_fields:
@@ -282,9 +262,6 @@ def apply_widget_by_field(model, field_names, **kwargs):
         elif isinstance(model._meta.get_field(field), models.TextField):
             if 'Text' in kwargs.keys():
                 widgets[field] = kwargs['Text']
-        elif isinstance(model._meta.get_field(field), models.DateField):
-            if 'Date' in kwargs.keys():
-                widgets[field] = kwargs['Date']
         elif isinstance(model._meta.get_field(field), models.BooleanField):
             if 'Boolean' in kwargs.keys():
                 widgets[field] = kwargs['Boolean']
@@ -294,12 +271,12 @@ def apply_widget_by_field(model, field_names, **kwargs):
         elif isinstance(model._meta.get_field(field), models.IntegerField):
             if 'Integer' in kwargs.keys():
                 widgets[field] = kwargs['Integer']
-        elif isinstance(model._meta.get_field(field), models.DateField):
-            if 'Date' in kwargs.keys():
-                widgets[field] = kwargs['Date']
         elif isinstance(model._meta.get_field(field), models.DateTimeField):
             if 'DateTime' in kwargs.keys():
                 widgets[field] = kwargs['DateTime']
+        elif isinstance(model._meta.get_field(field), models.DateField):
+            if 'Date' in kwargs.keys():
+                widgets[field] = kwargs['Date']
         elif isinstance(model._meta.get_field(field), models.FileField):
             if 'File' in kwargs.keys():
                 widgets[field] = kwargs['File']
@@ -457,7 +434,7 @@ def get_field_types(model, field_names):
     return types
 
 
-def get_all_fieldnames(model, with_foreignkey=True, remove=None, with_id=True):
+def get_all_field_info(model, with_foreignkey=True, remove=None, with_id=True):
     """
     주어진 Django 모델의 모든 필드 이름을 반환합니다.
     foreinkey 반환시 django 에서 참조하는 명은 '{model}_id' 입니다.
@@ -474,22 +451,27 @@ def get_all_fieldnames(model, with_foreignkey=True, remove=None, with_id=True):
     fields = model._meta.fields
     if with_foreignkey:
         if with_id:  # 반환시에는 {model}_id 형태로 반환합니다.
-            names = [field.attname for field in fields]
+            names_and_verboses = [(field.attname, field.verbose_name) for field in fields]
         else:  # 반환시에는 _id 을 제거하고 {model} 명만 반환합니다.
-            names = [field.attname
-                     if not isinstance(field, models.ForeignKey)
-                     else field.attname.replace('_id', '')
-                     for field in fields]
+            names_and_verboses = [(field.attname, field.verbose_name)
+                                  if not isinstance(field, models.ForeignKey)
+                                  else (field.attname.replace('_id', ''), field.verbose_name)
+                                  for field in fields]
     # foreign key column 을 제외하고 제공합니다.
     else:
-        names = [field.attname for field in fields if not isinstance(field, models.ForeignKey)]
+        names_and_verboses = [(field.attname, field.verbose_name) for field in fields if
+                              not isinstance(field, models.ForeignKey)]
+
     if remove:
         # fields 내 요소(element) 중 remove 에 포함되어 있는 요소를 제거합니다.
-        names = list(filter(lambda x: x not in remove, names))
-    return list(names)
+        names_and_verboses = [(name, verbose) for (name, verbose) in names_and_verboses if name not in remove]
+
+    names, verboses = zip(*names_and_verboses)
+    types = get_field_types(model, names)
+    return list(names), list(verboses), types
 
 
-def detail_html(request, object):
+def detail_html(request, object, form_class):
     """
     상세 페이지 HTML을 생성하여 반환합니다    .
 
@@ -500,44 +482,139 @@ def detail_html(request, object):
     :param object: 상세 정보를 표시할 모델 객체
     :return: 생성된 상세 페이지 HTML 컨텐츠
     """
-
-    # 모델 객체로부터 필드 이름, 타입, 외래 키 정보를 추출합니다.
-    field_names, field_types, fields = get_all_fieldnames_fieldtype(object, True, None)
-
+    fields = form_class.Meta.fields
+    field_names = form_class.Meta.field_names
+    field_types = form_class.Meta.types
     # 컨텍스트 생성
-    context = {'object': object, 'field_names': field_names, 'types': field_types}
+    context = {'object': object, 'fields': fields, 'types': field_types, 'field_names': field_names}
 
     # 상세 페이지 HTML을 렌더링합니다.
     detail_content = render(request, template_name='standard/detail.html', context=context).content.decode('utf-8')
 
     return detail_content
 
-
-def filtered_crud_table(base_url, model, url_path, **filter_kwargs):
+def crud_formtable(base_url, objects, form_class, url_path, **kwargs):
     """
-    참조된 CRUD 테이블을 생성하고 반환합니다.
-
-    사용법:
-        crud_projectfile_table = filtered_crud_table(base_url, ProjectFile, 'project', 'projectfile', project=project)
-
-    :param base_url: 기본 URL
-    :param model: 자식 모델
-    :param url_path: URL 경로들
-    :param filter_kwargs: 부모 필터 매개변수들
-    :return: 생성된 CRUD 테이블
+    form 정보를 기반으로 html table 을 생성해 반환합니다.
+    :param base_url:
+    :param objects:
+    :param form_class:
+    :param url_path:
+    :param kwargs:
+    :return:
     """
-    # 부모로부터 참조된 행들을 가져옵니다.
-    referenced_rows = model.objects.filter(**filter_kwargs)
 
-    # 모든 필드 이름과 타입, 포린 키를 포함하여 가져옵니다.
-    field_names, field_types, fields = get_all_fieldnames_fieldtype(model, with_foreignkey=True)
+    field_names = form_class.Meta.fields_with_id + ['detail', 'update', 'delete']
 
-    # CRUD 테이블을 생성합니다.
-    crud_table = generate_crud_table(base_url, referenced_rows, field_names, url_path)
+    if objects:  # 테이블 내 instance 존재 시 아래 코드 수행
+        object_df = pd.DataFrame.from_records(objects.values())
+        # detail button (read)
+        append_onclick_button('detail', object_df, os.path.join(base_url, url_path, 'detail'))
 
+        # generate update urls, (update)
+        append_onclick_button('update', object_df, os.path.join(base_url, url_path, 'update'))
+
+        # delete button (delete)
+        append_onclick_button('delete', object_df, os.path.join(base_url, url_path, 'delete'))
+
+    else:  # 테이블이 하나도 존재하지 않으면 아래 코드 수행
+        object_df = pd.DataFrame(columns=field_names)
+    column_names = form_class.Meta.field_names + ['상세', '업데이트', '제거']
+    object_df = object_df.loc[:, field_names]
+    object_df.columns = column_names
+
+    # df -> html
+    table_html = object_df.to_html(escape=False)
+
+    # create button
+    url = generate_url(base_url, os.path.join(url_path, 'create'))
+    button_tag = create_button(url, 'create')
+    crud_table = button_tag + table_html
     return crud_table
 
+def approval_crud_formtable(base_url, objects, form_class, url_path, **kwargs):
+    """
+    form 정보를 기반으로 html table 을 생성해 반환합니다.
+    :param base_url:
+    :param objects:
+    :param form_class:
+    :param url_path:
+    :param kwargs:
+    :return:
+    """
 
+    field_names = form_class.Meta.fields_with_id + ['approval', 'detail', 'update', 'delete']
+
+    if objects:  # 테이블 내 instance 존재 시 아래 코드 수행
+        object_df = pd.DataFrame.from_records(objects.values())
+        append_onclick_button('approval', object_df, os.path.join(base_url, url_path, 'approval'))
+
+        # detail button (read)
+        append_onclick_button('detail', object_df, os.path.join(base_url, url_path, 'detail'))
+
+        # generate update urls, (update)
+        append_onclick_button('update', object_df, os.path.join(base_url, url_path, 'update'))
+
+        # delete button (delete)
+        append_onclick_button('delete', object_df, os.path.join(base_url, url_path, 'delete'))
+
+
+    else:  # 테이블이 하나도 존재하지 않으면 아래 코드 수행
+        object_df = pd.DataFrame(columns=field_names)
+    column_names = form_class.Meta.field_names + ['승인', '상세', '업데이트', '제거']
+    object_df = object_df.loc[:, field_names]
+    object_df.columns = column_names
+
+    # df -> html
+    table_html = object_df.to_html(escape=False)
+
+    # create button
+    url = generate_url(base_url, os.path.join(url_path, 'create'))
+    button_tag = create_button(url, 'create')
+    crud_table = button_tag + table_html
+    return crud_table
+
+def gantt_crud_formtable(base_url, objects, form_class, url_path, **kwargs):
+    """
+    form 정보를 기반으로 html table 을 생성해 반환합니다.
+    :param base_url:
+    :param objects:
+    :param form_class:
+    :param url_path:
+    :param kwargs:
+    :return:
+    """
+
+    field_names = form_class.Meta.fields_with_id + ['gantt', 'detail', 'update', 'delete']
+
+    if objects:  # 테이블 내 instance 존재 시 아래 코드 수행
+        object_df = pd.DataFrame.from_records(objects.values())
+        append_onclick_button('gantt', object_df, os.path.join(base_url, 'twproject', 'load'))
+
+        # detail button (read)
+        append_onclick_button('detail', object_df, os.path.join(base_url, url_path, 'detail'))
+
+        # generate update urls, (update)
+        append_onclick_button('update', object_df, os.path.join(base_url, url_path, 'update'))
+
+        # delete button (delete)
+        append_onclick_button('delete', object_df, os.path.join(base_url, url_path, 'delete'))
+
+    else:  # 테이블이 하나도 존재하지 않으면 아래 코드 수행
+        object_df = pd.DataFrame(columns=field_names)
+
+    column_names = form_class.Meta.field_names + ['간트차트', '상세', '업데이트', '제거']
+    object_df = object_df.loc[:, field_names]
+    object_df.columns = column_names
+
+    # df -> html
+    table_html = object_df.to_html(escape=False)
+
+    # create button
+    url = generate_url(base_url, os.path.join(url_path, 'create'))
+    button_tag = create_button(url, 'create')
+    crud_table = button_tag + table_html
+    return crud_table
 def standard_index(request, model, model_filter, form_class, url_path, base, generate_crud_table, callback, **kwargs):
     """
     표준 인덱스 뷰 함수입니다.
@@ -571,7 +648,7 @@ def standard_index(request, model, model_filter, form_class, url_path, base, gen
     base_url = get_base_url(full_url)
 
     # crud standard table
-    crud_table_html = generate_crud_table(base_url, instances, form_class._meta.fields, url_path, **kwargs)
+    crud_table_html = generate_crud_table(base_url, instances, form_class, url_path, **kwargs)
     added_contents.append(crud_table_html)
 
     # callback
@@ -714,7 +791,7 @@ def standard_update(request, id, template_name, model, form_class, redirect_view
         return HttpResponse(ret_html)
 
 
-def standard_detail(request, id, model, callback, base, **callback_kwargs):
+def standard_detail(request, id, model, form_class, base, callback, **callback_kwargs):
     """
     표준 디테일 뷰 함수입니다. GET 요청 시 모델 인스턴스의 세부 정보를 보여줍니다.
 
@@ -729,11 +806,11 @@ def standard_detail(request, id, model, callback, base, **callback_kwargs):
     added_contents = []
     if request.method == 'GET':
         # 표준 디테일: 프로젝트
-        detail_content = detail_html(request, instance)
+        detail_content = detail_html(request, instance, form_class)
         added_contents.append(detail_content)
         # 콜백 함수 호출
         if callback:
-            callback(request=request, id=id, model=model, instance=instance,
+            callback(request=request, id=id, model=model, instance=instance, form_class=form_class,
                      detail_content=detail_content, added_contents=added_contents,
                      **callback_kwargs)
 
@@ -811,3 +888,17 @@ def h_tag(level, str_):
     </h{}>
     '''.format(level, str_, level)
     return h_tag
+
+
+def extract_file_info(file):
+    """
+
+    :param file: ex) file = form.cleaned_data['filecontent']
+    :return dict:
+    """
+    # 파일 속성 추출 및 생성
+    file_ext = os.path.splitext(file.name)[1]
+
+    # 속성 정보 저장
+    return {'name': file.name, 'size': file.size, 'ext': file_ext}
+

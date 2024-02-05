@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'django-insecure-=b1@dco71suf1c_=#ht1g27m0gt3a6-p2by$i8oojj)8u-f+u8
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -40,6 +38,8 @@ INSTALLED_APPS = [
     'account',  # <-- 추가된 코드
     'file',  # <-- 추가된 코드
     'doctris_base',
+    'project',
+    'twproject',  # <-- 추가된 코드
 ]
 
 MIDDLEWARE = [
@@ -72,7 +72,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'pms.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -82,7 +81,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -102,7 +100,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -113,7 +110,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -128,6 +124,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'account.CustomUser'  # <-- 추가된 코드
 
 MEDIA_ROOT = BASE_DIR / 'media'  # <-- 추가된 코드
-MEDIA_URL = '/media/' # <-- 추가된 코드
+MEDIA_URL = '/media/'  # <-- 추가된 코드
 
-LOGIN_REDIRECT_URL = '/account/profile' # <-- 추가된 코드
+LOGIN_REDIRECT_URL = '/account/profile'  # <-- 추가된 코드
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 50
+FILE_UPLOAD_MAX_MEMORY_SIZE = 1024 * 1024 * 50
