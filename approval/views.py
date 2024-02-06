@@ -56,7 +56,7 @@ def approval(request, id):
         inst.save()
     else:
         raise NotImplementedError
-    previous_page = request.META.get('HTTP_REFERER', '/')
+    previous_page = request.META.get('HTTP_REFERER', '/') # 접근 했던 페이지로 돌아감
     return redirect(previous_page)
 
 # TODO: ajax 로 변경하기

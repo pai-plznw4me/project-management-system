@@ -1,6 +1,5 @@
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
-
 from approval.forms import ApprovalCreateForm
 from approval.models import Approval
 from file.forms import FileCreateForm
@@ -27,6 +26,18 @@ def index(request):
         added_contents[0] = title + card_row((crud_table_html, 12))
 
     return standard_index(request, Project, {}, ProjectCreateForm, 'project', 'doctris', crud_formtable, _callback)
+
+
+@csrf_exempt
+def projectfile_index(request):
+    """
+    프로젝트 산출물을 생성하는 뷰 함수입니다.
+
+    :param request: HttpRequest 객체
+    :return: HttpResponse 객체
+    """
+
+    return standard_index(request, ProjectFile, {}, ProjectFileCreateForm, 'projectfile', 'doctris', crud_formtable, {})
 
 
 # Create your views here.
@@ -69,7 +80,6 @@ def projectfile_create(request):
 
     return standard_create(request, 'standard/create.html', ProjectFileCreateForm, 'project:detail', {}, 'doctris',
                            _callback)
-
 
 def update(request, id):
     """
@@ -142,7 +152,8 @@ def detail(request, id):
         # WBS 산출물
         projectfile_title = h_tag(2, 'WBS')  # h2 tag 제목
         wbs_projectfiles = projectfiles.filter(output='BD14-2')
-        crud_wbs_table = gantt_crud_formtable(base_url, wbs_projectfiles, ProjectFileCreateForm, 'project/projectfile', target_colname='output')
+        crud_wbs_table = gantt_crud_formtable(base_url, wbs_projectfiles, ProjectFileCreateForm, 'project/projectfile',
+                                              target_colname='output')
         added_contents.append(projectfile_title + card_row((crud_wbs_table, 12)))
 
         # 구매 관리 산출물
@@ -163,7 +174,6 @@ def detail(request, id):
         projectfile_title = h_tag(2, '자산관리')  # h2 tag 제목
         added_contents.append(projectfile_title + card_row((crud_projectfile_table, 12)))
 
-
     return standard_detail(request, id, Project, ProjectDetailForm, 'doctris', _callback)
 
 
@@ -181,17 +191,14 @@ def projectfile_detail(request, id):
         if inst.output == 'BD14-2':
             print('this is wbs')
 
+        # keyward argument parsing
         detail_content = kwargs['detail_content']
         added_contents = kwargs['added_contents']  # added_contents is list, list is mutable!
-        file = inst.file
-        file_detail_content = detail_html(request, file, FileCreateForm)
 
         # card 태그를 Wrapping 합니다.
         projectfile_title = h_tag(2, '프로젝트 산출물 상세')  # h2 tag 제목
         added_contents[0] = projectfile_title + card_row(
             (detail_content, 12))  # added_contents 내 첫번째 요소 : detail_content
-        file_title = h_tag(2, '파일 설명')  # h2 tag 제목
-        added_contents.append(card_row((file_title + file_detail_content, 12)))
 
     return standard_detail(request, id, ProjectFile, ProjectFileDetailForm, 'doctris', _callback)
 

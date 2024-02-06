@@ -5,6 +5,8 @@ from django.db import models
 
 from account.models import CustomUser
 from file.models import File
+from project.validators import validate_version_format
+
 STATUS_CHOICE = [('RET', '반려'),
                  ('SUC', '성공'),
                  ('RDY', '검사전')]
@@ -224,17 +226,17 @@ class Project(models.Model):
         return self.id
 
 
-class ProjectFile(models.Model):
+class ProjectFile(File):
     id = models.CharField(max_length=20, primary_key=True)  # 산출물 고유 아이디
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)  # 프로젝트
     phase = models.CharField(max_length=2, choices=PHASE_CHOICE)  # 산출물 단계 코드
     activity = models.CharField(max_length=4, choices=ACTIVITY_CHOICE)  # 산출물 행동 코드
     task = models.CharField(max_length=4, choices=TASK_CHOICE)  # 산출물 작업 코드
     output = models.CharField(max_length=6, choices=OUTPUT_CHOICE)  # 산출물 코드
-    file = models.ForeignKey(to=File, on_delete=models.SET_NULL, null=True, related_name='projectfile_file')  # 산출물 파일
     writer = models.ForeignKey(to=CustomUser, on_delete=models.PROTECT, related_name='projectfile_writer')  # 작성자 , writer 삭제시 해당 자료에 대한 권한을 넘겨 줘야합니다.
     reviewer = models.ForeignKey(to=CustomUser, on_delete=models.PROTECT,related_name='projectfile_reviewer')  # 검토자 , reviewer 삭제시 해당 자료에 대한 권한을 넘겨 줘야합니다.
-    version = models.CharField(max_length=15, default='v.0.0.1')  # 버전
+    version = models.CharField(max_length=15,validators=[validate_version_format], default='v.0.0.1')  # 버전
+
     review_date = models.DateTimeField()  # 산출물 검토 기간
     deadline_date = models.DateTimeField()  # 마감 기간
     status = models.CharField(max_length=3, choices=STATUS_CHOICE, default='RDY')  # 산출물 승인 상태

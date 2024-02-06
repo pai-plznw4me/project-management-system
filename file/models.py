@@ -16,9 +16,9 @@ class File(models.Model):
     # 파일 용량
     size = models.IntegerField()
     # 문서 업로드 시간
-    upload_datetime = models.DateTimeField(auto_now_add=True)
+    upload_datetime = models.DateTimeField(null=True)
     # 문서 생성 시간
     creation_date = models.DateField(null=True, blank=True)
-    # 문서 버전
-    version = models.CharField(max_length=100, validators=[validate_version_format], null=True, blank=True)
 
+    class Meta:
+        abstract = True

@@ -1,9 +1,10 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
 from account.forms import CustomUserCreationForm, CustomUserProfileForm
 from account.models import CustomUser
+from helper import add_content
 
 
 # Create your views here.
@@ -26,7 +27,7 @@ def signup(request):
             inst.save()
 
             # profile 페이지로 redirect 함
-            return HttpResponse('Signup complete')
+            return redirect('login')
         else:
             print('Errors:', form.errors)
             return render(request, template_name='account/signup.html', context={'errors': form.errors})
@@ -58,7 +59,9 @@ def profile(request):
             types.append(field.get_internal_type())
     # template 을 rendering 합니다.
     context = {'user': user, 'field_names': field_names, 'types': types}
-    return render(request, template_name='account/profile.html', context=context)
+    content = render(request, template_name='account/profile.html', context=context).content.decode('utf-8')
+    ret_html = add_content(request, 'doctris', *[content])
+    return HttpResponse(ret_html)
 
 
 
@@ -74,7 +77,8 @@ def createsuperuser(request):
                                         career=2,
                                         rank='manager',
                                         date_company_joined='2022-02-02',
-                                        id_number='admin',
+                                        personal_id='admin',
+                                        company_id='BIS',
                                         department='관리부',
                                         region='서울').save()
     return HttpResponse('Create Superuser : admin ')

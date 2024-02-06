@@ -615,6 +615,7 @@ def gantt_crud_formtable(base_url, objects, form_class, url_path, **kwargs):
     button_tag = create_button(url, 'create')
     crud_table = button_tag + table_html
     return crud_table
+
 def standard_index(request, model, model_filter, form_class, url_path, base, generate_crud_table, callback, **kwargs):
     """
     표준 인덱스 뷰 함수입니다.
