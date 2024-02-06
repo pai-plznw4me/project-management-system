@@ -172,10 +172,10 @@ def index(request):
 def load(request, projectfileid):
     # 파일 경로를 가져옵니다.
     projectfile = ProjectFile.objects.get(id=projectfileid)
-    filepath = projectfile.file.filecontent.path
+    filepath = projectfile.filecontent.path
 
     # 확장자를 제거한 파일 이름을 WBS Page 제목으로 사용합니다.
-    title = os.path.splitext(projectfile.file.name)[0]
+    title = os.path.splitext(projectfile.filecontent.name)[0]
     ret = open(filepath, 'r').read()
 
     # json load
